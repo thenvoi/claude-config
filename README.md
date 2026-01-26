@@ -15,7 +15,8 @@ rules/
 ├── 02-git-workflow.md          # Branch naming, submodules, conventional commits
 ├── 03-code-quality.md          # Ruff, pyrefly, uv commands
 ├── 04-testing.md               # Pytest patterns, fixtures, markers
-└── 05-optional-dependencies.md # Lazy imports, optional deps, skip markers
+├── 05-optional-dependencies.md # Lazy imports, optional deps, skip markers
+└── 06-claude-config-management.md # Where to put shared vs repo-specific rules
 ```
 
 ## Usage
