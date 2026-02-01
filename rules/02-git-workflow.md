@@ -40,6 +40,18 @@ Prefixes:
 - `docs/` - Documentation changes
 - `chore/` - Maintenance tasks
 
+### Creating Branches from Linear Issues
+
+Use `git lb` to create properly named branches from Linear issues:
+
+```bash
+git lb INT-84
+```
+
+This automatically fetches the issue title from Linear and creates a branch with the correct naming convention.
+
+If `git lb` is not installed, ask the developer for the proper branch name.
+
 ## Commit Messages
 
 Follow conventional commits format for all commits:
