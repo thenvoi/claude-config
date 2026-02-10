@@ -2,13 +2,23 @@
 
 You are adding a new framework adapter and history converter to the Thenvoi SDK using a test-driven development workflow. The framework name is: **$ARGUMENTS**
 
+**Naming conventions used in this document:**
+- `$ARGUMENTS` — the lowercase module name (e.g. `openai`, `gemini`)
+- `{Framework}` — the PascalCase class prefix (e.g. `OpenAI`, `Gemini`). Derive this from `$ARGUMENTS`.
+
 Follow each phase in order. Do NOT skip ahead — the conformance tests must fail before you write the implementation.
 
 ---
 
 ## Phase 1: Scaffold Source Files
 
-Create empty/minimal source files so imports resolve:
+Create empty/minimal source files so imports resolve.
+
+If the framework requires an external SDK (e.g. `openai`, `google-generativeai`), add an optional dependency group in `pyproject.toml`:
+```toml
+[project.optional-dependencies]
+$ARGUMENTS = ["<package-name>>=<min-version>"]
+```
 
 1. **Create the converter** at `src/thenvoi/converters/$ARGUMENTS.py`:
    - Import `from __future__ import annotations`
@@ -46,12 +56,12 @@ Edit `tests/framework_configs/converters.py`:
 
 1. Add a factory function:
    ```python
-   def _{name}_factory(**kw: Any) -> Any:
-       from thenvoi.converters.{name} import {Framework}HistoryConverter
+   def _$ARGUMENTS_factory(**kw: Any) -> Any:
+       from thenvoi.converters.$ARGUMENTS import {Framework}HistoryConverter
        return {Framework}HistoryConverter(**kw)
    ```
 
-2. Add a builder function `_build_{name}_config()` returning a `ConverterConfig` with:
+2. Add a builder function `_build_$ARGUMENTS_config()` returning a `ConverterConfig` with:
    - `framework_id` matching the module filename (e.g. `"openai"`)
    - `converter_factory` pointing to the factory
    - `empty_result` — `[]` for list-based, `""` for string-based
@@ -66,13 +76,13 @@ Edit `tests/framework_configs/adapters.py`:
 
 1. Add a factory function that handles required constructor args with mocks:
    ```python
-   def _{name}_factory(**kw: Any) -> Any:
-       from thenvoi.adapters.{name} import {Framework}Adapter
+   def _$ARGUMENTS_factory(**kw: Any) -> Any:
+       from thenvoi.adapters.$ARGUMENTS import {Framework}Adapter
        # Inject mocks for required args (e.g. kw.setdefault("llm", MagicMock()))
        return {Framework}Adapter(**kw)
    ```
 
-2. Add a builder function `_build_{name}_config()` returning an `AdapterConfig` with:
+2. Add a builder function `_build_$ARGUMENTS_config()` returning an `AdapterConfig` with:
    - `framework_id` matching the module filename
    - `adapter_factory` pointing to the factory
    - `expected_initial_values` — use `_default_from_init(cls, param)` to read defaults from `__init__`
@@ -140,7 +150,7 @@ uv run pytest tests/framework_conformance/test_adapter_conformance.py -v -k "$AR
 
 ### 6a. Adapter-specific tests
 
-Create `tests/adapters/test_{name}_adapter.py`:
+Create `tests/adapters/test_$ARGUMENTS_adapter.py`:
 
 ```
 """Tests for {Framework}Adapter.
@@ -158,7 +168,7 @@ Use `MagicMock()` as the base for `mock_tools` fixtures with explicit `AsyncMock
 
 ### 6b. Converter-specific tests
 
-Create `tests/converters/test_{name}.py`:
+Create `tests/converters/test_$ARGUMENTS.py`:
 
 ```
 """Tests for {Framework}HistoryConverter.
@@ -181,7 +191,7 @@ Cover: tool event conversion format, batching, multi-message joining, malformed 
 uv run pytest tests/framework_conformance/ tests/framework_configs/ -v
 
 # Framework-specific tests
-uv run pytest tests/adapters/test_{name}_adapter.py tests/converters/test_{name}.py -v
+uv run pytest tests/adapters/test_$ARGUMENTS_adapter.py tests/converters/test_$ARGUMENTS.py -v
 
 # Full test suite
 uv run pytest tests/ --ignore=tests/integration/ -v
@@ -208,7 +218,7 @@ All tests must pass. Config drift tests must show no uncovered modules.
 | Adapter conformance tests | `tests/framework_conformance/test_adapter_conformance.py` |
 | Converter conformance tests | `tests/framework_conformance/test_converter_conformance.py` |
 | Config drift detection | `tests/framework_conformance/test_config_drift.py` |
-| Framework-specific adapter tests | `tests/adapters/test_{name}_adapter.py` |
-| Framework-specific converter tests | `tests/converters/test_{name}.py` |
+| Framework-specific adapter tests | `tests/adapters/test_$ARGUMENTS_adapter.py` |
+| Framework-specific converter tests | `tests/converters/test_$ARGUMENTS.py` |
 | Excluded modules (adapters) | `ADAPTER_EXCLUDED_MODULES` in `tests/framework_configs/adapters.py` |
 | Excluded modules (converters) | `CONVERTER_EXCLUDED_MODULES` in `tests/framework_configs/converters.py` |
